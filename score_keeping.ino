@@ -19,6 +19,17 @@ unsigned long elapsedTime;
 int highScore = 0;
 bool gameStarted = false;
 
+void scrollText(int row, String message, int delayTime) {
+  message = message + "           ";
+
+  for (int i = 0; i < message.length(); i++) {
+    lcd.setCursor(0, row);
+    lcd.print(message.substring(i));
+
+    delay(delayTime);
+  }
+}
+
 void setup() {
   lcd.init(); 
   lcd.backlight();
@@ -63,8 +74,12 @@ void loop() {
     lcd.setCursor(0, 0);
     lcd.print("Score: ");
     lcd.print(score);
+
+    if (String(highScore).length() >= 11) {
+      scrollText(1, " High: " + String(highScore), 500);
+    }
     lcd.setCursor(0, 1);
-    lcd.print("High Score: ");
+    lcd.print("High: ");
     lcd.print(highScore);
   }
 }
