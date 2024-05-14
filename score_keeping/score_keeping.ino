@@ -5,9 +5,22 @@ Copyright (c) 2024 Samuel Asebrook
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <ezButton.h>
+#include <FastLED.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // Set the LCD address to 0x27 for a 16 chars and 2 line display
-LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 16, 2);
+// LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 16, 2);
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
 
 // Define the pin numbers for the sensors
 const int opticalSensorPin = A0; // 5V
@@ -57,8 +70,10 @@ void scrollText(int row, String message, int delayTime) {
   message = message + "           ";
 
   for (int i = 0; i < message.length(); i++) {
-    lcd.setCursor(0, row);
-    lcd.print(message.substring(i));
+    display.clearDisplay();
+    display.setCursor(0, row);
+    display.print(message.substring(i));
+    display.display();
 
     delay(delayTime);
   }
@@ -67,12 +82,42 @@ void scrollText(int row, String message, int delayTime) {
 void setup() {
   Serial.begin(9600);
 
-  lcd.init(); 
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Hell Yeah!");
-  lcd.setCursor(0, 1);
-  lcd.print("Pinball!");
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+  // Commenting out lcd code in favor of OLED TODO: TRANSFER
+  // lcd.init(); 
+  // lcd.backlight();
+  // lcd.setCursor(0, 0);
+  // lcd.print("Hell Yeah!");
+  // lcd.setCursor(0, 1);
+  // lcd.print("Pinball!");
+  display.display(); // Show initial display buffer contents on the screen
+  delay(2000); // Pause for 2 seconds
+
+  display.clearDisplay();
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.println("Good Luck!");
+  display.setCursor(0,16);
+  display.println("You Will Need It!");
+  display.display();
+  display.clearDisplay();
+  // Display a long line of text and scroll through it using the adafuit
+  display.clearDisplay();
+display.setTextSize(1);
+display.setTextColor(SSD1306_WHITE);
+display.setCursor(0,0);
+display.setTextWrap(false);  // Disable text wrapping
+
+// Split your long text into multiple shorter strings
+String longText = "This is a very long line of text that will need to scroll across the display.";
+scrollText(0, longText, 100);
+  
 
   pinMode(opticalSensorPin, INPUT);
   pinMode(limitSwitchPin, INPUT_PULLUP);
@@ -133,12 +178,21 @@ void loop() {
     // The launcher has been pulled back, start the game
     startTime = millis();
     gameStarted = true;
+    // TODO: TRANSFER
+    // lcd.clear();
+    // lcd.setCursor(0, 0);
+    // lcd.print("Good Luck!");
+    // lcd.setCursor(0, 1);
+    // lcd.print("You Need It!");
 
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Good Luck!");
-    lcd.setCursor(0, 1);
-    lcd.print("You Need It!");
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println("Good Luck!");
+    display.setCursor(0,16);
+    display.println("You Will Need It!");
+    display.display();
     delay(1000);
   }
 
@@ -255,24 +309,25 @@ void loop() {
       highScore = score;
     }
 
-    // Display the score on the LCD
-    lcd.clear();
+    // Display the score on the LCD TODO: TRANSFER
+    // lcd.clear();
+    display.clearDisplay();
 
-    if (String(score).length() >= 10) {
-      scrollText(0, " Score: " + String(score), 500);
-    }
-    lcd.setCursor(0, 0);
-    lcd.print("Score: ");
-    lcd.print(score);
+  // Display the score on the OLED
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.print("Score: ");
+  display.println(score);
 
-    if (String(highScore).length() >= 11) {
-      scrollText(1, " High: " + String(highScore), 500);
-    }
-    lcd.setCursor(0, 1);
-    lcd.print("High: ");
-    lcd.print(highScore);
+  display.setCursor(0,16);
+  display.print("High: ");
+  display.println(highScore);
 
-    score = 0;
-    multiplier = 1;
-  }
+  display.display();
+
+  score = 0;
+  multiplier = 1;
+}
 }
