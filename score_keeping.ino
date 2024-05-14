@@ -67,12 +67,10 @@ void loop() {
     lcd.print("You Need It!");
   }
 
-  if ((state_0 == 1 && state0_moved == false) || (state_1 == 1 && state1_moved == false) || (state_2 == 1 && state2_moved == false) || (state_3 == 1 && state3_moved == false) || (state_4 == 1 && state4_moved == false) ) {
+  if ((state_1 == 1 && state1_moved == false) || (state_2 == 1 && state2_moved == false) || (state_3 == 1 && state3_moved == false) || (state_4 == 1 && state4_moved == false) ) {
     score = score + (multiplier * 100);
 
-    if (state_0 == 1) {
-      state0_moved = true;
-    } else if (state_1 == 1) {
+    if (state_1 == 1) {
       state1_moved = true;
     } else if (state_2 == 1) {
       state2_moved = true;
@@ -83,12 +81,10 @@ void loop() {
     }
   }
 
-  if ((state_0 == 2 && state0_moved == true) || (state_1 == 2 && state1_moved == true) || (state_2 == 2 && state2_moved == true) || (state_3 == 2 && state3_moved == true) || (state_4 == 2 && state4_moved == true) ) {
+  if ((state_1 == 2 && state1_moved == true) || (state_2 == 2 && state2_moved == true) || (state_3 == 2 && state3_moved == true) || (state_4 == 2 && state4_moved == true) ) {
     score = score + (multiplier * 200);
 
-    if (state_0 == 2) {
-      state0_moved = false;
-    } else if (state_1 == 2) {
+    if (state_1 == 2) {
       state1_moved = false;
     } else if (state_2 == 2) {
       state2_moved = false;
@@ -99,12 +95,10 @@ void loop() {
     }
   }
 
-  if ((state_0 == 3 && state0_moved == false) || (state_1 == 3 && state1_moved == false) || (state_2 == 3 && state2_moved == false) || (state_3 == 3 && state3_moved == false) || (state_4 == 3 && state4_moved == false) ) {
+  if ((state_1 == 3 && state1_moved == false) || (state_2 == 3 && state2_moved == false) || (state_3 == 3 && state3_moved == false) || (state_4 == 3 && state4_moved == false) ) {
     score = score + (multiplier * 300);
 
-    if (state_0 == 3) {
-      state0_moved = true;
-    } else if (state_1 == 3) {
+    if (state_1 == 3) {
       state1_moved = true;
     } else if (state_2 == 3) {
       state2_moved = true;
@@ -115,12 +109,10 @@ void loop() {
     }
   }
 
-  if ((state_0 == 4 && state0_moved == true) || (state_1 == 4 && state1_moved == true) || (state_2 == 4 && state2_moved == true) || (state_3 == 4 && state3_moved == true) || (state_4 == 4 && state4_moved == true) ) {
+  if ((state_1 == 4 && state1_moved == true) || (state_2 == 4 && state2_moved == true) || (state_3 == 4 && state3_moved == true) || (state_4 == 4 && state4_moved == true) ) {
     score = score + (multiplier * 1000);
 
-    if (state_0 == 4) {
-      state0_moved = false;
-    } else if (state_1 == 4) {
+    if (state_1 == 4) {
       state1_moved = false;
     } else if (state_2 == 4) {
       state2_moved = false;
@@ -131,8 +123,8 @@ void loop() {
     }
   }
 
-  if (state_0 == 4 && state_1 == 4 && state_2 == 4 && state_3 == 4 && state_4 == 4) {
-    state_0 == 0;
+  if (state_1 == 4 && state_2 == 4 && state_3 == 4 && state_4 == 4) {
+    
     state_1 == 0;
     state_2 == 0;
     state_3 == 0;
@@ -147,7 +139,7 @@ void loop() {
     gameStarted = false;
 
     // Calculate the score
-    score = score + (elapsedTime / 10);
+    score = score + (elapsedTime / 100);
     if (score > highScore) {
       highScore = score;
     }
@@ -169,6 +161,7 @@ void loop() {
     lcd.print("High: ");
     lcd.print(highScore);
 
+    // Reset game score and score multiplier at end of game
     score = 0;
     multiplier = 1;
   }
