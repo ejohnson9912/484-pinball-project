@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "programmer": "avrisp",
+    "sketch": "score_keeping/score_keeping.ino",
+    "port": "/dev/tty.usbmodem1442401"
+}

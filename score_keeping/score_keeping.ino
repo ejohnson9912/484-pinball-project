@@ -1,18 +1,16 @@
 /*
-Copyright (c) 2024 Samuel Asebrook
+Copyright (c) 2024 Samuel Asebrook, Erik Johnson, Mika Burmeister, and Ryan Campbell
 */
 
-#include <Wire.h> 
-#include <LiquidCrystal_I2C.h>
 #include <ezButton.h>
 #include <FastLED.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <splash.h>
 
-// Set the LCD address to 0x27 for a 16 chars and 2 line display
-// LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 16, 2);
+#define buzzerPin 5
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -20,13 +18,17 @@ Copyright (c) 2024 Samuel Asebrook
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+// Initialize the WS2812B LED strip with fastLED
+// #define NUM_LEDS 60
+// #define LED_PIN 6
+// CRGB leds[NUM_LEDS];
+
+
 
 
 // Define the pin numbers for the sensors
 const int opticalSensorPin = A0; // 5V
 const int limitSwitchPin = 2; // 3.3V
-// LCD SDA Pin = A4
-// LCD SCL Pin = A5
 
 unsigned long startTime;
 unsigned long elapsedTime;
@@ -66,57 +68,87 @@ ezButton sw2(18);
 ezButton sw3(4);
 ezButton sw4(3);
 
-void scrollText(int row, String message, int delayTime) {
-  message = message + "           ";
-
-  for (int i = 0; i < message.length(); i++) {
-    display.clearDisplay();
-    display.setCursor(0, row);
-    display.print(message.substring(i));
-    display.display();
-
-    delay(delayTime);
-  }
+void hitSound() {
+  // Play a sound when the launcher hits the limit switch
+  tone(buzzerPin, 1000, 100);
 }
+
+// void hitLEDStrip() {
+//   // Flash the LED strip when the launcher hits the limit switch
+//   for (int i = 0; i < NUM_LEDS; i++) {
+//     leds[i] = CRGB::Red;
+//   }
+//   FastLED.show();
+//   delay(100);
+//   for (int i = 0; i < NUM_LEDS; i++) {
+//     leds[i] = CRGB::Black;
+//   }
+//   FastLED.show();
+// }
+
+// void gameStartLEDStrip() {
+//   // Do a blue snake animation on the LED strip when the game starts
+//   for (int i = 0; i < NUM_LEDS; i++) {
+//     leds[i] = CRGB::Blue;
+//     FastLED.show();
+//     delay(50);
+//   }
+// }
+
+void gameStartSong() {
+  // Play a song when the game starts
+  tone(buzzerPin, 1000, 100);
+  delay(100);
+  tone(buzzerPin, 1500, 100);
+  delay(100);
+  tone(buzzerPin, 2000, 100);
+}
+
+void scrollText(const String& message) {
+    int textWidth = message.length() * (8.5); // Calculate the width of the text in pixels, including space between characters
+    int xPos = SCREEN_WIDTH; // Starting position of the text off the screen
+
+    while (xPos > -textWidth) {
+        display.clearDisplay(); // Clear the display buffer
+        display.setCursor(xPos, 0); // Set the cursor position
+        display.println(message); // Print the message
+        display.display(); // Update the display
+
+        xPos--; // Move the text to the left
+    }
+    display.clearDisplay(); // Clear the display buffer
+}
+
 
 void setup() {
   Serial.begin(9600);
-
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
-  // Commenting out lcd code in favor of OLED TODO: TRANSFER
-  // lcd.init(); 
-  // lcd.backlight();
-  // lcd.setCursor(0, 0);
-  // lcd.print("Hell Yeah!");
-  // lcd.setCursor(0, 1);
-  // lcd.print("Pinball!");
-  display.display(); // Show initial display buffer contents on the screen
+    display.display();  
+    delay(1);
+    display.clearDisplay();
+    display.setTextWrap(false);
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+
+    scrollText("Welcome to Battleship!");
+
+  // Init LEDs 
+  // FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+  // FastLED.setBrightness(50);
+  // for (int i = 0; i < NUM_LEDS; i++) {
+  //   leds[i] = CRGB::Black;
+  // }
+  // FastLED.show();
   delay(2000); // Pause for 2 seconds
+  gameStartSong();
+  hitSound();
+  hitSound();
+  hitSound();
 
-  display.clearDisplay();
-  display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0,0);
-  display.println("Good Luck!");
-  display.setCursor(0,16);
-  display.println("You Will Need It!");
-  display.display();
-  display.clearDisplay();
-  // Display a long line of text and scroll through it using the adafuit
-  display.clearDisplay();
-display.setTextSize(1);
-display.setTextColor(SSD1306_WHITE);
-display.setCursor(0,0);
-display.setTextWrap(false);  // Disable text wrapping
-
-// Split your long text into multiple shorter strings
-String longText = "This is a very long line of text that will need to scroll across the display.";
-scrollText(0, longText, 100);
   
 
   pinMode(opticalSensorPin, INPUT);
@@ -149,6 +181,7 @@ scrollText(0, longText, 100);
 }
 
 void loop() {
+
   int opticalSensorState = digitalRead(opticalSensorPin);
   int limitSwitchState = digitalRead(limitSwitchPin);
 
@@ -178,22 +211,16 @@ void loop() {
     // The launcher has been pulled back, start the game
     startTime = millis();
     gameStarted = true;
-    // TODO: TRANSFER
-    // lcd.clear();
-    // lcd.setCursor(0, 0);
-    // lcd.print("Good Luck!");
-    // lcd.setCursor(0, 1);
-    // lcd.print("You Need It!");
 
-    display.clearDisplay();
-    display.setTextSize(2);
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0,0);
-    display.println("Good Luck!");
-    display.setCursor(0,16);
-    display.println("You Will Need It!");
-    display.display();
-    delay(1000);
+    // display.clearDisplay();
+    // display.setTextSize(2);
+    // display.setTextColor(SSD1306_WHITE);
+    // display.setCursor(0,0);
+    // display.println("Good Luck!");
+    // display.setCursor(0,16);
+    // display.println("You Will Need It!");
+    // display.display();
+    // delay(1000);
   }
 
   if ((state_1 == 1 && state1_moved == false) || (state_2 == 1 && state2_moved == false) || (state_3 == 1 && state3_moved == false) || (state_4 == 1 && state4_moved == false) ) {
