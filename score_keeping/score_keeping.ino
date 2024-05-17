@@ -41,32 +41,34 @@ bool state2_moved = false;
 bool state3_moved = false;
 bool state4_moved = false;
 
-int led_1_1 = 23;
-int led_1_2 = 22;
-int led_1_3 = 0;
-int led_1_4 = 0;
+int led_1_1 = 22;
+int led_1_2 = 23;
+int led_1_3 = 24;
+int led_1_4 = 25;
 
-int led_2_1 = 27;
-int led_2_2 = 26;
-int led_2_3 = 0;
-int led_2_4 = 0;
+int led_2_1 = 40;
+int led_2_2 = 41;
+int led_2_3 = 42;
+int led_2_4 = 43;
 
-int led_3_1 = 31;
-int led_3_2 = 30;
-int led_3_3 = 0;
-int led_3_4 = 0;
+int led_3_1 = 34;
+int led_3_2 = 35;
+int led_3_3 = 36;
+int led_3_4 = 37;
 
-int led_4_1 = 35;
-int led_4_2 = 34;
-int led_4_3 = 0;
-int led_4_4 = 0;
+int led_4_1 = 28;
+int led_4_2 = 29;
+int led_4_3 = 30;
+int led_4_4 = 31;
 
 
 int state_1, state_2, state_3, state_4 = 0; // Dummy variables strictly for local compilation purposes, REMOVE UPON GROUP COMPILATION
-ezButton sw1(19);
+ezButton sw1(13);
 ezButton sw2(18);
-ezButton sw3(4);
-ezButton sw4(3);
+ezButton sw3(19);
+ezButton sw4(11);
+ezButton startSw(10);
+ezbutton stopSw(15);
 
 void hitSound() {
   // Play a sound when the launcher hits the limit switch
@@ -158,6 +160,8 @@ void setup() {
   sw2.setDebounceTime(50);
   sw3.setDebounceTime(50);
   sw4.setDebounceTime(50);
+  startSw.setDebounceTime(50);
+  stopSw.setDebounceTime(50);
 
   pinMode(led_1_1, OUTPUT);
   pinMode(led_1_2, OUTPUT);
@@ -182,13 +186,15 @@ void setup() {
 
 void loop() {
 
-  int opticalSensorState = digitalRead(opticalSensorPin);
-  int limitSwitchState = digitalRead(limitSwitchPin);
+  //int opticalSensorState = digitalRead(opticalSensorPin);
+  //int limitSwitchState = digitalRead(limitSwitchPin);
 
   sw1.loop();
   sw2.loop();
   sw3.loop();
   sw4.loop();
+  startSw.loop();
+  stopSw.loop();  
 
   if(sw1.isPressed()) {
    state_1++;
@@ -207,7 +213,7 @@ void loop() {
   }
 
 
-  if (opticalSensorState == HIGH && !gameStarted) {
+  if (startSw.isPressed() && !gameStarted) {
     // The launcher has been pulled back, start the game
     startTime = millis();
     gameStarted = true;
@@ -325,7 +331,7 @@ void loop() {
     multiplier = multiplier * 2;
   }
 
-  if (gameStarted && limitSwitchState == LOW) {
+  if (gameStarted && stopSw.isPressed()) {
     // The limit switch has been pressed, end the game
     elapsedTime = millis() - startTime;
     gameStarted = false;
