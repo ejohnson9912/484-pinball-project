@@ -10,7 +10,7 @@ Copyright (c) 2024 Samuel Asebrook, Erik Johnson, Mika Burmeister, and Ryan Camp
 #include <Adafruit_SSD1306.h>
 #include <splash.h>
 
-#define buzzerPin 5
+#define buzzerPin 7
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
@@ -19,9 +19,11 @@ Copyright (c) 2024 Samuel Asebrook, Erik Johnson, Mika Burmeister, and Ryan Camp
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Initialize the WS2812B LED strip with fastLED
-// #define NUM_LEDS 60
-// #define LED_PIN 6
-// CRGB leds[NUM_LEDS];
+#define NUM_LEDS 60
+#define LED_PIN 16
+CRGB leds[NUM_LEDS];
+
+// Piezo Pin: 17
 
 
 
@@ -68,34 +70,30 @@ ezButton sw2(18);
 ezButton sw3(19);
 ezButton sw4(11);
 ezButton startSw(10);
-ezbutton stopSw(15);
+ezButton stopSw(15);
 
 void hitSound() {
   // Play a sound when the launcher hits the limit switch
   tone(buzzerPin, 1000, 100);
 }
 
-// void hitLEDStrip() {
-//   // Flash the LED strip when the launcher hits the limit switch
-//   for (int i = 0; i < NUM_LEDS; i++) {
-//     leds[i] = CRGB::Red;
-//   }
-//   FastLED.show();
-//   delay(100);
-//   for (int i = 0; i < NUM_LEDS; i++) {
-//     leds[i] = CRGB::Black;
-//   }
-//   FastLED.show();
-// }
+void hitLEDStrip() {
+  // Flash the LED strip when the launcher hits the limit switch
+  fill_solid(leds, NUM_LEDS, CRGB::Red);
+    FastLED.show();
+    delay(100);
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+}
 
-// void gameStartLEDStrip() {
-//   // Do a blue snake animation on the LED strip when the game starts
-//   for (int i = 0; i < NUM_LEDS; i++) {
-//     leds[i] = CRGB::Blue;
-//     FastLED.show();
-//     delay(50);
-//   }
-// }
+void gameStartLEDStrip() {
+  // Do a blue snake animation on the LED strip when the game starts
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Blue;
+    FastLED.show();
+    delay(50);
+  }
+}
 
 void gameStartSong() {
   // Play a song when the game starts
@@ -139,17 +137,17 @@ void setup() {
     scrollText("Welcome to Battleship!");
 
   // Init LEDs 
-  // FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
-  // FastLED.setBrightness(50);
-  // for (int i = 0; i < NUM_LEDS; i++) {
-  //   leds[i] = CRGB::Black;
-  // }
-  // FastLED.show();
-  delay(2000); // Pause for 2 seconds
-  gameStartSong();
-  hitSound();
-  hitSound();
-  hitSound();
+    FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+    FastLED.setBrightness(50);
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Black;
+    }
+    FastLED.show();
+    // leds fill rainbow
+    fill_rainbow(leds, NUM_LEDS, 0, 255);
+    FastLED.show();
+    gameStartLEDStrip();
+    gameStartSong();
 
   
 
@@ -198,18 +196,26 @@ void loop() {
 
   if(sw1.isPressed()) {
    state_1++;
+   hitLEDStrip();
+   hitSound();
   }
 
   if(sw2.isPressed()) {
    state_2++;
+   hitLEDStrip();
+   hitSound();
   }
 
   if(sw3.isPressed()) {
    state_3++;
+   hitLEDStrip();
+   hitSound();
   }
 
   if(sw4.isPressed()) {
    state_4++;
+   hitLEDStrip();
+   hitSound();
   }
 
 
@@ -301,11 +307,11 @@ void loop() {
     }
   }
 
-  if (state_1 == 4 && state_2 == 4 && state_3 == 4 && state_4 == 4) {
-    state_1 == 0;
-    state_2 == 0;
-    state_3 == 0;
-    state_4 == 0;
+  if (state_1 >= 4 && state_2 >= 4 && state_3 >= 4 && state_4 >= 4) {
+    state_1 = 0;
+    state_2 = 0;
+    state_3 = 0;
+    state_4 = 0;
 
     digitalWrite(led_1_1, LOW);
     digitalWrite(led_1_2, LOW);
@@ -341,10 +347,10 @@ void loop() {
     if (score > highScore) {
       highScore = score;
     }
-
-    // Display the score on the LCD TODO: TRANSFER
-    // lcd.clear();
-    display.clearDisplay();
+  state_1 = 0;
+  state_2 = 0;
+  state_3 = 0;
+  state_4 = 0;
 
   // Display the score on the OLED
   display.clearDisplay();

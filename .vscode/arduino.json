@@ -1,6 +1,7 @@
 {
-    "board": "arduino:avr:uno",
+    "board": "arduino:avr:mega",
     "programmer": "avrisp",
     "sketch": "score_keeping/score_keeping.ino",
-    "port": "/dev/tty.usbmodem1442401"
+    "port": "/dev/tty.usbmodem1434101",
+    "configuration": "cpu=atmega2560"
 }
